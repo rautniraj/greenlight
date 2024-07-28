@@ -52,3 +52,5 @@
 
 # Ignore environment configuration.
 .env*
+data/redis/database_data/dump.rdb
+data
