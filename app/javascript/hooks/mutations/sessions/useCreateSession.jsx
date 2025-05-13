@@ -28,6 +28,7 @@ export default function useCreateSession() {
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('location');
   const { setStateChanging } = useAuth();
+  const storedRedirect = localStorage.getItem('redirectAfterSignIn');
 
   return useMutation(
     ({ session, token }) => axios.post('/sessions.json', { session, token }).then((resp) => resp.data.data),
@@ -35,15 +36,31 @@ export default function useCreateSession() {
       onSuccess: async (response) => {
         setStateChanging(true);
         await queryClient.refetchQueries('useSessions');
-        // if the current user does NOT have the CreateRoom permission, then do not re-direct to rooms page
 
         if (redirect) {
           navigate(redirect);
-        } else if (response.permissions.CreateRoom === 'false') {
+        } else if (storedRedirect) {
+          // Check if the stored path is valid
+          try {
+            const url = new URL(storedRedirect, window.location.origin);
+            navigate(url.pathname);
+            localStorage.removeItem('redirectAfterSignIn');
+          
+          } catch (e) {
+            console.log("inside catch")
+            // If the path is invalid, fall back to the next else if block
+            if (response.permissions.CreateRoom === 'false') {
+              navigate('/home');
+            } else {
+              navigate('/rooms');
+            }
+          }
+        }  else if (response.permissions.CreateRoom === 'false') {
           navigate('/home');
         } else {
           navigate('/rooms');
         }
+
         setStateChanging(true);
       },
       onError: (err) => {

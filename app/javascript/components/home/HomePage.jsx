@@ -38,14 +38,21 @@ export default function HomePage() {
   const { data: recordValue } = useRoomConfigValue('record');
   const { data: env } = useEnv();
 
+  console.log("home page : ", currentUser)
+
   // Redirects the user to the proper page based on signed in status and CreateRoom permission
   useEffect(
     () => {
       // Todo: Use PermissionChecker.
-      if (!currentUser.stateChanging && currentUser.signed_in && currentUser.permissions.CreateRoom === 'true') {
+      if (currentUser.signed_in && currentUser.permissions.CreateRoom === 'true') {
         navigate('/rooms');
-      } else if (!currentUser.stateChanging && currentUser.signed_in && currentUser.permissions.CreateRoom === 'false') {
+        console.log("inside navigate rooms")
+
+      } else if (currentUser.signed_in && currentUser.permissions.CreateRoom === 'false') {
         navigate('/home');
+        console.log("inside navigate home")
+
+
       }
     },
     [currentUser.signed_in],

@@ -15,7 +15,7 @@
 // with Greenlight; if not, see <http://www.gnu.org/licenses/>.
 
 import React from 'react';
-import { Navigate, Outlet, useMatch } from 'react-router-dom';
+import { Navigate, Outlet, useMatch, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/auth/AuthProvider';
@@ -27,6 +27,7 @@ export default function AuthenticatedOnly() {
   const roomsMatch = useMatch('/rooms/:friendlyId');
   const superAdminMatch = useMatch('/admin/*');
   const deleteSession = useDeleteSession({ showToast: false });
+  const location = useLocation();
 
   // User is either pending or banned
   if (currentUser.signed_in && (currentUser.status !== 'active' || !currentUser.verified)) {
@@ -51,8 +52,11 @@ export default function AuthenticatedOnly() {
   }
 
   if (!currentUser.signed_in) {
+    // Store the current URL in localStorage
+    localStorage.setItem('redirectAfterSignIn', location.pathname);
+
     toast.error(t('toast.error.signin_required'));
-    return <Navigate to="/" />;
+    return <Navigate to="/signin" />;
   }
 
   return <Outlet />;
